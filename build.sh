@@ -40,8 +40,8 @@ done
 
 TARGET=${TARGET:-gram}
 BUILD_TYPE=${BUILD_TYPE:-REL_WITH_ASSERTS}
-STATIC=${STATIC:- }
-[[ "$STATIC" =~ -static| ]] || usage
+STATIC=${STATIC:---static}
+[[ "$STATIC" == --static ]] || usage
 
 BASE_DIR=$(realpath $(dirname $0))
 CUR_DIR=$(pwd)
