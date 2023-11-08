@@ -40,8 +40,8 @@ done
 
 TARGET=${TARGET:-gram}
 BUILD_TYPE=${BUILD_TYPE:-REL_WITH_ASSERTS}
-STATIC=${STATIC:---static}
-[[ "$STATIC" == --static ]] || usage
+
+[[ -z "${STATIC:-}" || "$STATIC" == "-static" ]] || ( usage && exit 1 ; )
 
 BASE_DIR=$(realpath $(dirname $0))
 CUR_DIR=$(pwd)
@@ -60,7 +60,7 @@ echo "Building in: ${BUILD_DIR}" >&1
 echo "Writing stdout to: ${STDOUT_FILE}" >&1
 mkdir -p "${BUILD_DIR}" && cd "${BUILD_DIR}"
 
-CMAKE_OPTS="-DCMAKE_EXE_LINKER_FLAGS=${STATIC} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+CMAKE_OPTS="-DCMAKE_EXE_LINKER_FLAGS=${STATIC:- } -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 
 conan install .. -s compiler.libcxx=libstdc++11 --build=missing > "$STDOUT_FILE"
 CC=gcc CXX=g++ cmake "$CMAKE_OPTS" .. | tee -a "$STDOUT_FILE"
