@@ -12,6 +12,8 @@ usage(){
     exit 0
 }
 
+CMAKE_OPTS=()
+
 while [[ $# -gt 0 ]]
 do
     key="$1"
@@ -33,7 +35,8 @@ do
         shift
         ;;
         *)    # unknown option
-        usage
+        CMAKE_OPTS+=("$1")
+        shift
         ;;
     esac
 done
@@ -60,10 +63,12 @@ echo "Building in: ${BUILD_DIR}" >&1
 echo "Writing stdout to: ${STDOUT_FILE}" >&1
 mkdir -p "${BUILD_DIR}" && cd "${BUILD_DIR}"
 
-CMAKE_OPTS="-DCMAKE_EXE_LINKER_FLAGS=${STATIC:- } -DCMAKE_BUILD_TYPE=${BUILD_TYPE} "${@}""
+CMAKE_OPTS+=("-DCMAKE_EXE_LINKER_FLAGS=${STATIC:- }" "-DCMAKE_BUILD_TYPE=${BUILD_TYPE}")
 
 conan install .. -s compiler.libcxx=libstdc++11 --build=missing > "$STDOUT_FILE"
-CC=${CC:-gcc} CXX=${CXX:-g++} cmake "$CMAKE_OPTS" .. | tee -a "$STDOUT_FILE"
+
+CC=${CC:-gcc} CXX=${CXX:-g++} cmake "${CMAKE_OPTS[@]}" .. | tee -a "$STDOUT_FILE"
+
 make -j 4 "${TARGET}" | tee -a "$STDOUT_FILE"
 
 [[ "${TARGET}" == "test_main" ]] && ctest -V
